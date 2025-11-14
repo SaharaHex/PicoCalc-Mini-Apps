@@ -19,6 +19,23 @@ Dim explosionR(5), explosionPrevR(5)    ' Explosion radius and previous radius
 Dim explosionActive(5)                  ' Explosion active flags
 Dim explosionPrevPX(41), explosionPrevPY(41) 'Explosion variables
 Dim score
+Dim barColors(17)                       ' Side score indicator
+  barColors(1) = RGB(26, 70, 83)
+  barColors(2) = RGB(26, 70, 83)
+  barColors(3) = RGB(26, 70, 83)
+  barColors(4) = RGB(26, 70, 83)
+  barColors(5) = RGB(114, 188, 212)
+  barColors(6) = RGB(114, 188, 212)
+  barColors(7) = RGB(114, 188, 212)
+  barColors(8) = RGB(114, 188, 212)
+  barColors(9) = RGB(173, 216, 230)
+  barColors(10) = RGB(173, 216, 230)
+  barColors(11) = RGB(173, 216, 230)
+  barColors(12) = RGB(173, 216, 230)
+  barColors(13) = RGB(255, 255, 255)
+  barColors(14) = RGB(255, 255, 255)
+  barColors(15) = RGB(255, 255, 255)
+  barColors(16) = RGB(255, 255, 0)
 
 cityX(1) = 40: cityX(2) = 80: cityX(3) = 120: cityX(4) = 160: cityX(5) = 200: cityX(6) = 240: cityX(7) = 280
 cityY = 225                             ' Y position of cities near bottom
@@ -34,43 +51,60 @@ missileChar = 33
 explosionChar = 34
 cityChar = 35
 
-CLS
-TEXT 10, 10, CHR$(missileChar), , 8, , RGB(255, 0, 0), 2
-TEXT 30, 10, CHR$(explosionChar), , 8, , RGB(255, 255, 0), 2
-TEXT 50, 10, CHR$(cityChar), , 8, , RGB(0, 255, 0), 2
-PAUSE 3000
-Do
-  k$=Inkey$
-Loop Until k$<>""
+show_intro
+
+Sub show_intro
+  CLS
+  'text x,y,"string",align,font,scl,c,bc
+  Text 80,20,"Inspired by Atari",,4,1,RGB(114, 188, 212), 2 'blue
+  Text 40,40,"Character Sprite Edition",,4,1,RGB(173, 216, 230), 2 'light blue
+  Text 50,60,"(11-2025) by SaharaHex",,4,1,RGB(173, 216, 230), 2 'light blue
+  Text 20,80,"Mini Missile",,5,1,RGB(114, 188, 212), 2 'blue
+  Text 80,110,"Command",,5,1,RGB(114, 188, 212), 2 'blue
+  Text 50,140,"(for PicoCalc)",,3,1,RGB(173, 216, 230), 2 'light blue
+  TEXT 20, 180, "M for Restart. X for Exit", , 4, , RGB(173, 216, 230), 2
+  TEXT 20, 200, "Controls : to fire Missiles", , 4, , RGB(173, 216, 230), 2
+  TEXT 20, 220, "Use the numbers : ", , 4, , RGB(173, 216, 230), 2
+  TEXT 30, 240, "1, 2, 3 for top of screen", , 4, , RGB(173, 216, 230), 2
+  TEXT 30, 260, "4, 5, 6 for middle of screen", , 4, , RGB(173, 216, 230), 2
+  TEXT 30, 280, "7, 8, 9 for bottom of screen", , 4, , RGB(173, 216, 230), 2
+  TEXT 30, 300, "0       for random fire", , 4, , RGB(173, 216, 230), 2
+  PAUSE 3000
+  Do
+    k$=Inkey$
+  Loop Until k$<>""
+End Sub
 
 '--------------------------------------
 ' Draw screen border (static)
 SUB DrawBorder
-  LINE 10,10,300,10,7,RGB(gray)   ' Top
-  LINE 10,10,10,250,7,RGB(gray)   ' Left
-  LINE 300,10,300,250,7,RGB(gray) ' Right
-  LINE 10,250,306,250,7,RGB(gray) ' Bottom
-  TEXT 65, 260, "Top", , 2, , RGB(255, 0, 0), 2
-  BOX 2, 260, 20, 20, 2, RGB(gray)
-  TEXT 11, 265, "1", , 8, , RGB(255, 0, 0), 2
-  BOX 2, 280, 20, 20, 2, RGB(gray)
-  TEXT 11, 285, "4", , 8, , RGB(255, 0, 0), 2
-  BOX 2, 300, 20, 20, 2, RGB(gray)
-  TEXT 11, 305, "7", , 8, , RGB(255, 0, 0), 2
-  TEXT 65, 280, "Middle", , 2, , RGB(255, 0, 0), 2
-  BOX 22, 260, 20, 20, 2, RGB(gray)
-  TEXT 31, 265, "2", , 8, , RGB(255, 0, 0), 2
-  BOX 22, 280, 20, 20, 2, RGB(gray)
-  TEXT 31, 285, "5", , 8, , RGB(255, 0, 0), 2
-  BOX 22, 300, 20, 20, 2, RGB(gray)
-  TEXT 31, 305, "6", , 8, , RGB(255, 0, 0), 2
-  TEXT 65, 300, "Bottom", , 2, , RGB(255, 0, 0), 2
-  BOX 42, 260, 20, 20, 2, RGB(gray)
-  TEXT 51, 265, "3", , 8, , RGB(255, 0, 0), 2
-  BOX 42, 280, 20, 20, 2, RGB(gray)
-  TEXT 51, 285, "8", , 8, , RGB(255, 0, 0), 2
-  BOX 42, 300, 20, 20, 2, RGB(gray)
-  TEXT 51, 305, "9", , 8, , RGB(255, 0, 0), 2
+  LINE 10,10,300,10,7,RGB(26, 70, 83)   ' Top
+  LINE 10,10,10,250,7,RGB(26, 70, 83)   ' Left
+  LINE 300,10,300,250,7,RGB(26, 70, 83) ' Right
+  LINE 10,250,306,250,7,RGB(26, 70, 83) ' Bottom
+  TEXT 65, 260, "Top", , 2, , RGB(173, 216, 230), 2
+  BOX 2, 260, 20, 20, 2, RGB(26, 70, 83) 'dark blue 
+  TEXT 11, 265, "1", , 7, , RGB(173, 216, 230), 2
+  BOX 2, 280, 20, 20, 2, RGB(26, 70, 83)
+  TEXT 11, 285, "4", , 7, , RGB(173, 216, 230), 2
+  BOX 2, 300, 20, 20, 2, RGB(26, 70, 83)
+  TEXT 11, 305, "7", , 7, , RGB(173, 216, 230), 2
+  TEXT 65, 280, "Middle", , 2, , RGB(173, 216, 230), 2
+  BOX 22, 260, 20, 20, 2, RGB(26, 70, 83)
+  TEXT 31, 265, "2", , 7, , RGB(173, 216, 230), 2
+  BOX 22, 280, 20, 20, 2, RGB(26, 70, 83)
+  TEXT 31, 285, "5", , 7, , RGB(173, 216, 230), 2
+  BOX 22, 300, 20, 20, 2, RGB(26, 70, 83)
+  TEXT 31, 305, "8", , 7, , RGB(173, 216, 230), 2
+  TEXT 65, 300, "Bottom", , 2, , RGB(173, 216, 230), 2
+  BOX 42, 260, 20, 20, 2, RGB(26, 70, 83)
+  TEXT 51, 265, "3", , 7, , RGB(173, 216, 230), 2
+  BOX 42, 280, 20, 20, 2, RGB(26, 70, 83)
+  TEXT 51, 285, "6", , 7, , RGB(173, 216, 230), 2
+  BOX 42, 300, 20, 20, 2, RGB(26, 70, 83)
+  TEXT 51, 305, "9", , 7, , RGB(173, 216, 230), 2
+  TEXT 125, 265, "M : Restart", , 7, , RGB(173, 216, 230), 2
+  TEXT 125, 275, "X : Exit", , 7, , RGB(173, 216, 230), 2
 END SUB
 
 '--------------------------------------
@@ -78,16 +112,24 @@ END SUB
 SUB DrawScore
   TEXT 200, 260, "Score: " + STR$(score), , 2, , RGB(255, 255, 255), 2
 
-  TEXT 200, 295, "City destroyed!", , 7, , RGB(255, 0, 0), 2
+  TEXT 200, 295, "City destroyed!", , 7, , RGB(114, 188, 212), 2
   xStart = 200
   spacing = 15
   xPos = xStart
   FOR i = 1 TO 7
     IF cityAlive(i) = 0 THEN
-      TEXT xPos, 305, STR$(i), , 7, , RGB(255, 0, 0), 2
+      TEXT xPos, 305, STR$(i), , 7, , RGB(114, 188, 212), 2
       xPos = xPos + spacing
     END IF
   NEXT
+  ' Side score indicator, from score 20 to 170
+  FOR i = 1 TO 16
+    IF score >= i * 10 THEN
+      y1 = 10 + (i - 1) * 15
+      y2 = y1 + 10
+      LINE 310, y1, 310, y2, 1, barColors(i)
+    END IF
+  NEXT      
 END SUB
 
 '--------------------------------------
@@ -119,7 +161,7 @@ END SUB
 SUB DrawCities
   FOR i = 1 TO 7
     IF cityAlive(i) = 1 THEN
-      TEXT cityX(i), cityY, CHR$(35),,2,,RGB(green), 2
+      TEXT cityX(i), cityY, CHR$(cityChar),,2,,RGB(green), 2
     ELSE
       TEXT cityX(i), cityY, " ",,2,,RGB(0, 0, 0), 2
     END IF
@@ -132,7 +174,7 @@ SUB DrawMissiles
   FOR i = 1 TO 10
     IF missileActive(i) = 1 THEN
       IF missileX(i) >= 10 AND missileX(i) <= 280 AND missileY(i) >= 10 AND missileY(i) <= 250 THEN
-        TEXT missileX(i), missileY(i), CHR$(33),,2,,RGB(255, 0, 0), 2
+        TEXT missileX(i), missileY(i), CHR$(missileChar),,2,,RGB(255, 0, 0), 2
       END IF
       missilePrevY(i) = missileY(i)
     ELSE
@@ -219,7 +261,7 @@ SUB DrawExplosions
     IF explosionActive(i) = 1 THEN
       IF explosionX(i) >= 38 AND explosionX(i) <= 267 AND explosionY(i) >= 37 AND explosionY(i) <= 190 THEN
         TEXT explosionPrevX, explosionPrevY, " ",,2,,RGB(0, 0, 0), 2 ' Erase old
-        TEXT explosionX(i), explosionY(i), CHR$(34),,2,,RGB(255, 255, 0), 2
+        TEXT explosionX(i), explosionY(i), CHR$(explosionChar),,2,,RGB(255, 255, 0), 2
         explosionPrevR(i) = explosionR(i)
         explosionPrevX = explosionX(i)
         explosionPrevY = explosionY(i)
@@ -255,6 +297,7 @@ SUB GameLoop
   FOR i = 1 TO 7
     cityAlive(i) = 1
   NEXT
+  score = 0 'Reset
 
   DrawBorder
   DrawCities
@@ -279,8 +322,10 @@ SUB GameLoop
 
     IF aliveCount = 0 THEN
       TEXT 100, 120, "GAME OVER", , 4, , RGB(255, 0, 0), 2
-      TEXT 100, 140, "Final Score: " + STR$(score), , 2, , RGB(255, 255, 255), 2
-      PAUSE 5000
+      TEXT 60, 140, "Final Score: " + STR$(score), , 2, , RGB(255, 255, 255), 2
+      PAUSE 6000
+      show_intro
+      GameLoop
       EXIT SUB
     END IF
     
@@ -300,6 +345,16 @@ SUB GameLoop
         LaunchExplosion xRand, yRand
       CASE "0"
         LaunchExplosion 38 + RND * 229, 37 + RND * 153  ' Full random fallback
+      CASE "M", "m"
+        show_intro
+        GameLoop
+        EXIT SUB
+      CASE "X", "x"
+        CLS
+        TEXT 70, 20, "Eagle Signing Out.", , 4, , RGB(114, 188, 212), 2
+        TEXT 110, 40, "Exiting...", , 4, , RGB(173, 216, 230), 2
+        PAUSE 1000
+        EXIT SUB      
     END SELECT
 
     PAUSE 30
