@@ -19,6 +19,7 @@ Dim explosionR(5), explosionPrevR(5)    ' Explosion radius and previous radius
 Dim explosionActive(5)                  ' Explosion active flags
 Dim explosionPrevPX(41), explosionPrevPY(41) 'Explosion variables
 Dim score
+Dim hiscore
 Dim barColors(17)                       ' Side score indicator
   barColors(1) = RGB(26, 70, 83)
   barColors(2) = RGB(26, 70, 83)
@@ -45,12 +46,15 @@ explosionMaxR = 20                      ' Max radius before explosion disappears
 explosionPrevX = 20
 explosionPrevY = 20
 score = 0
+hiscore = 0
+fileName$  = "MiniMC.txt"
 
 ' Sprite characters from custom font
 missileChar = 33
 explosionChar = 34
 cityChar = 35
 
+readData
 show_intro
 
 Sub show_intro
@@ -111,6 +115,7 @@ END SUB
 ' Draw the score
 SUB DrawScore
   TEXT 200, 260, "Score: " + STR$(score), , 2, , RGB(255, 255, 255), 2
+  TEXT 200, 285, "High Score: " + STR$(hiscore), , 7, , RGB(173, 216, 230), 2
 
   TEXT 200, 295, "City destroyed!", , 7, , RGB(114, 188, 212), 2
   xStart = 200
@@ -131,6 +136,25 @@ SUB DrawScore
     END IF
   NEXT      
 END SUB
+
+'--------------------------------------
+' Read high score data
+Sub readData
+  If MM.Info(exists file fileName$) Then
+    Open fileName$ For input As #1
+    Line Input #1,line$
+    Close #1
+    hiscore = Val(line$)
+  EndIf
+End Sub
+
+'--------------------------------------
+' Save high score data
+Sub saveData
+  Open fileName$ For output As #1
+  Print #1, hiscore
+  Close #1
+End Sub
 
 '--------------------------------------
 ' Initialize missiles with random X positions
@@ -234,11 +258,11 @@ SUB UpdateExplosions
       explosionR(i) = explosionR(i) + 2
 
       ' Draw new ring and store positions
-      FOR a = 0 TO 315 STEP 45
-        p = a / 45
+      FOR angle = 0 TO 315 STEP 45
+        p = angle / 45
         index = (i - 1) * 8 + p
-        px = explosionX(i) + COS(a) * explosionR(i)
-        py = explosionY(i) + SIN(a) * explosionR(i)
+        px = explosionX(i) + COS(angle) * explosionR(i)
+        py = explosionY(i) + SIN(angle) * explosionR(i)
         TEXT px, py, "*",,2,,RGB(255, 255, 0), 2
         IF index >= 1 AND index <= 41 THEN
           explosionPrevPX(index) = px
@@ -323,7 +347,12 @@ SUB GameLoop
     IF aliveCount = 0 THEN
       TEXT 100, 120, "GAME OVER", , 4, , RGB(255, 0, 0), 2
       TEXT 60, 140, "Final Score: " + STR$(score), , 2, , RGB(255, 255, 255), 2
+      If score > hiscore Then ' Check if you beat your high score
+        hiscore = score
+        saveData
+      EndIf
       PAUSE 6000
+      readData
       show_intro
       GameLoop
       EXIT SUB
@@ -346,6 +375,7 @@ SUB GameLoop
       CASE "0"
         LaunchExplosion 38 + RND * 229, 37 + RND * 153  ' Full random fallback
       CASE "M", "m"
+        readData
         show_intro
         GameLoop
         EXIT SUB
