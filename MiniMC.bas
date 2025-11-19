@@ -19,7 +19,8 @@ Dim explosionR(5), explosionPrevR(5)    ' Explosion radius and previous radius
 Dim explosionActive(5)                  ' Explosion active flags
 Dim explosionPrevPX(41), explosionPrevPY(41) 'Explosion variables
 Dim score
-Dim hiscore
+Dim hiscore                             ' Your high score
+Dim pointsPerHit                        ' Points per Hit
 Dim barColors(17)                       ' Side score indicator
   barColors(1) = RGB(26, 70, 83)
   barColors(2) = RGB(26, 70, 83)
@@ -155,6 +156,32 @@ Sub saveData
   Print #1, hiscore
   Close #1
 End Sub
+
+'--------------------------------------
+' Setting level difficulty based on points
+SUB SetDifficulty
+  IF score < 100 THEN
+    missileSpeed = 2
+    explosionMaxR = 20
+    pointsPerHit = 10
+  ELSEIF score < 150 THEN
+    missileSpeed = 3
+    explosionMaxR = 15
+    pointsPerHit = 10
+  ELSEIF score < 200 THEN
+    missileSpeed = 4
+    explosionMaxR = 12
+    pointsPerHit = 15
+  ELSEIF score < 250 THEN
+    missileSpeed = 5
+    explosionMaxR = 10
+    pointsPerHit = 15
+  ELSE  
+    missileSpeed = 6
+    explosionMaxR = 8
+    pointsPerHit = 15
+  END IF
+END SUB
 
 '--------------------------------------
 ' Initialize missiles with random X positions
@@ -306,7 +333,7 @@ SUB CheckCollisions
           dist = SQR(dx*dx + dy*dy)
           IF dist <= explosionR(e) THEN
             missileActive(m) = 0
-            score = score + 10
+            score = score + pointsPerHit
           END IF
         END IF
       NEXT
@@ -329,6 +356,7 @@ SUB GameLoop
 
   DO
     ' Update game state
+    SetDifficulty
     UpdateMissiles
     UpdateExplosions
     CheckCollisions
