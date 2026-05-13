@@ -14,6 +14,7 @@ Dim vx, vy          ' Velocity
 Dim onGround        ' Grounded flag
 Dim lives           ' Player lives
 Dim score           ' Player score
+Dim hiscore         ' Your high score
 Dim currentLevel    ' Game level
 Dim hasMovingE      ' Are there moving Enemies
 
@@ -46,11 +47,14 @@ gravity = 0.4
 moveSpeed = 2
 jumpStrength = -7
 
-lives = 9
+lives = 10
 score = 0
+hiscore = 0
+fileName$  = "MiniHJ.txt"
 currentLevel = 1
 currentLevelText$ = "Get to White Square" ' Level message 
 
+readData
 ShowIntro
 
 '--------------------------------------
@@ -59,13 +63,20 @@ Sub ShowIntro
   CLS
   'text x,y,"string",align,font,scl,c,bc
   Text 80,20,"A Micro Platformer",,4,1,RGB(115, 43, 245), 2 'purple
-  Text 40,40,"-------------------------",,4,1,RGB(126, 132, 247), 2 'light purple
+  Text 10,40,"------------------------------",,4,1,RGB(126, 132, 247), 2 'light purple
   Text 50,60,"(05-2026) by SaharaHex",,4,1,RGB(126, 132, 247), 2 'light purple
   Text 20,80,"Mini HexJump",,5,1,RGB(115, 43, 245), 2 'purple
   Text 40,110,"Platformer",,5,1,RGB(115, 43, 245), 2 'purple
   Text 50,140,"(for PicoCalc)",,3,1,RGB(126, 132, 247), 2 'light purple
   TEXT 20, 180, "M for Restart. X for Exit", , 4, , RGB(126, 132, 247), 2
-  TEXT 20, 200, "(Working Progress, Testing)", , 4, , RGB(126, 132, 247), 2
+  TEXT 20, 200, "Controls : to move use", , 4, , RGB(126, 132, 247), 2
+  TEXT 20, 220, "R : Jump Left", , 4, , RGB(115, 43, 245), 2
+  TEXT 100, 240, "T : Jump Up", , 4, , RGB(115, 43, 245), 2
+  TEXT 165, 220, "Y : Jump Right", , 4, , RGB(115, 43, 245), 2
+  TEXT 20, 260, "F : Move Left", , 4, , RGB(115, 43, 245), 2
+  TEXT 165, 260, "H : Move Right", , 4, , RGB(115, 43, 245), 2
+  TEXT 100, 280, "L : Skip level", , 4, , RGB(115, 43, 245), 2
+  TEXT 10, 300, "------------------------------", , 4, , RGB(126, 132, 247), 2
   PAUSE 3000
   Do
     k$=Inkey$
@@ -84,8 +95,10 @@ Sub DrawInterface
   TEXT 11, 305, "Y : Jump Right", , 7, , RGB(126, 132, 247), 2
   TEXT 110, 285, "F : Move Left", , 7, , RGB(126, 132, 247), 2
   TEXT 110, 295, "H : Move Right", , 7, , RGB(126, 132, 247), 2
+  TEXT 110, 305, "High Score: " + STR$(hiscore), , 7, , RGB(115, 43, 245), 2
   TEXT 210, 285, "M : Restart", , 7, , RGB(126, 132, 247), 2
-  TEXT 210, 295, "X : Exit", , 7, , RGB(126, 132, 247), 2
+  TEXT 210, 295, "L : Skip level", , 7, , RGB(126, 132, 247), 2
+  TEXT 210, 305, "X : Exit", , 7, , RGB(126, 132, 247), 2
 END SUB
 
 '--------------------------------------
@@ -250,8 +263,8 @@ END SUB
 '--------------------------------------
 ' Draw the score
 SUB DrawScore
-  TEXT 10, 10, "Score: " + STR$(score), , 1, , RGB(115, 43, 245), 2
-  TEXT 230, 10, "Lives: " + STR$(lives), , 1, , RGB(115, 43, 245), 2
+  TEXT 10, 10, "Score: " + STR$(score) + " ", , 1, , RGB(115, 43, 245), 2
+  TEXT 230, 10, "Lives: " + STR$(lives) + " ", , 1, , RGB(115, 43, 245), 2
 END SUB
 
 '--------------------------------------
@@ -290,6 +303,9 @@ Sub CheckEnemyCollision
           vy = -4
           vx = -vx
 
+          ' Sound effect on enemy hit 
+          PlayHitSound
+
           ' Flash effect
           Box px, py, 10, 10, 1, RGB(255,0,0)
           Pause 80
@@ -313,6 +329,7 @@ Sub CheckExitCollision
       CLS   
       TEXT 20, 120, ">>     Level Complete!    <<", , 4, , RGB(114,188,212), 2
       TEXT 90, 150, "Score: " + STR$(score), , 2, , RGB(115, 43, 245), 2
+      PlayLevelUpSound
       Pause 3000
       CLS 0
       DrawInterface
@@ -321,14 +338,19 @@ Sub CheckExitCollision
 
       If currentLevel > 3 Then
         CLS
+        If score > hiscore Then ' Check if you beat your high score
+          hiscore = score
+          saveData
+        EndIf        
         TEXT 20, 100, "----------------------------", , 4, , RGB(115, 43, 245), 2
         TEXT 20, 120, ">> You Completed HexJump! <<", , 4, , RGB(114,188,212), 2
         TEXT 90, 150, "Score: " + STR$(score), , 2, , RGB(115, 43, 245), 2
         TEXT 20, 170, "----------------------------", , 4, , RGB(115, 43, 245), 2
         Pause 3000
-        lives = 9
+        lives = 10
         score = 0
         currentLevel = 1
+        readData
         ShowIntro
         GameLoop
         End
@@ -375,6 +397,49 @@ Sub UpdateEnemies(level)
 END SUB
 
 '--------------------------------------
+' Simple sounds
+Sub PlayHitSound
+  Play Tone 600, 20: Pause 50
+  Play Tone 300, 30: Pause 50
+  Play Tone 0, 0    ' Stop sound
+End Sub
+
+Sub PlayLevelUpSound
+  Play tone 350,400: Pause 200
+  Play tone 0,0: Pause 50
+  Play tone 400,350: Pause 200
+  Play tone 0,0: Pause 50
+  Play tone 350,400: Pause 200
+  Play Tone 0,0     ' Stop sound
+End Sub
+
+Sub PlayGameOverSound
+  For f=600 To 300 Step -50
+    Play tone f,f: Pause 200
+  Next
+  Play Tone 0,0     ' Stop sound
+End Sub
+
+'--------------------------------------
+' Read high score data
+Sub readData
+  If MM.Info(exists file fileName$) Then
+    Open fileName$ For input As #1
+    Line Input #1,line$
+    Close #1
+    hiscore = Val(line$)
+  EndIf
+End Sub
+
+'--------------------------------------
+' Save high score data
+Sub saveData
+  Open fileName$ For output As #1
+  Print #1, hiscore
+  Close #1
+End Sub
+
+'--------------------------------------
 ' Main game loop
 Sub GameLoop
   CLS 0
@@ -409,12 +474,24 @@ Sub GameLoop
         onGround = 0
       EndIf      
 
-      ' Restart / Exit
+      ' Restart / Skip level / Exit
       Select Case k$
         Case "m", "M"
           ShowIntro
           GameLoop
           Exit Sub
+        Case "l", "L"
+          currentLevel = currentLevel + 1
+          If currentLevel > 3 Then currentLevel = 1
+          PlayLevelUpSound
+          TEXT 95, 10, "Skipping Level..", , 1, , RGB(255, 60, 237), 2 'pink
+          Pause 1000
+          CLS 0
+          lives = 10
+          score = 0
+          DrawInterface
+          ResetGame
+          Continue Do
         Case "x", "X"
           CLS
           TEXT 70, 20, "Eagle Signing Out.", , 4, , RGB(115, 43, 245), 2
@@ -454,12 +531,18 @@ Sub GameLoop
       DrawScore
 
       If lives = 0 Then
+        If score > hiscore Then ' Check if you beat your high score
+          hiscore = score
+          saveData
+        EndIf       
         gameOver = 1
-        lives = 9
+        lives = 10
         score = 0
         currentLevel = 1
         TEXT 165, 250, "Game Over...", , 4, , RGB(255,0,0), 2
+        PlayGameOverSound       
         Pause 3000
+        readData
         ShowIntro
         GameLoop
       EndIf
