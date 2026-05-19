@@ -1,8 +1,14 @@
 MMBasic programs designed for the ClockWork PicoCalc
 
-So far just the one:
+_Running on WebMite_PICO2W_V6.00.03_PicoCalc.uf2_
 
-__MiniMC__ – Mini Missile Command: A character sprite edition inspired by Atari's Missile Command, tailored for PicoCalc (Running on WebMite_PICO2W_V6.00.03_PicoCalc.uf2), __Note__: creates a text file (MiniMC.txt) to store the high score.
+__MiniMC__ – Mini Missile Command
+
+- A character sprite edition inspired by Atari’s Missile Command, tailored for the PicoCalc. __Note__: Creates a high score file (MiniMC.txt).
+
+__MiniHJ__ – Mini Hex Jump
+
+- A tiny platformer built in MMBasic for the PicoCalc. __Note__: Creates a high score file (MiniHJ.txt).
 
 ## Recommended IDE Setup
 
